@@ -30,7 +30,9 @@ class Simulation {
         //options.velocity = options.velocity ?? [Math.random() * 10 - 5, Math.random() * 10 - 5]
         options.velocity = options.velocity ?? [0, 0]
         options.radius = options.radius ?? 3
-        options.gravity = options.gravity ?? options.radius/12 //0.25
+        options.stable = options.stable ?? false
+        options.gravity = ( options.gravity ?? options.radius/12 )
+        options.gravity += options.stable ? 0 : (Math.random() * options.gravity) - (options.gravity/2)
         this.planets.push(options)
     }
     removePlanet (index) {
