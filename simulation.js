@@ -31,7 +31,7 @@ class Simulation {
         options.velocity = options.velocity ?? [0, 0]
         options.radius = options.radius ?? 3
         options.stable = options.stable ?? false
-        options.gravity = ( options.gravity ?? options.radius/12 )
+        options.gravity = ( options.gravity ?? options.radius/24 )
         options.gravity += options.stable ? 0 : (Math.random() * options.gravity) - (options.gravity/2)
         this.planets.push(options)
     }
@@ -42,7 +42,7 @@ class Simulation {
     }
     calculate () {
         //Calculate how to change the planets' velocity using distances from other planets
-        this.planets = this.planets.map((planet, i) => {
+        let planets = this.planets.map((planet, i) => {
             this.planets.forEach((otherPlanet, ind) => {
                 let distance = ind != i ? this.distance(planet.coords, otherPlanet.coords) : null
                 if (!distance) return;
@@ -61,6 +61,7 @@ class Simulation {
             })
             return planet;
         })
+        this.planets = planets
         //Adjust planets to move
         this.planets = this.planets.map(planet => {
             planet.coords = planet.coords.map((coord, i) => {
