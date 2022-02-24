@@ -46,18 +46,9 @@ class Simulation {
             this.planets.forEach((otherPlanet, ind) => {
                 let distance = ind != i ? this.distance(planet.coords, otherPlanet.coords) : null
                 if (!distance) return;
-
-                distance = distance / (this.ctx.canvas.width + this.ctx.canvas.height)
-                let b = (-otherPlanet.gravity * (distance**2) + (otherPlanet.gravity/8))
-                if (b < 0) return;
-                
-                //this.ctx.beginPath(); this.ctx.strokeStyle = planet.color; this.ctx.moveTo(...planet.coords); this.ctx.lineTo(...otherPlanet.coords); this.ctx.stroke()
-                //ctx.font = "30px Arial"; ctx.fillText(b, (planet.coords[0] + otherPlanet.coords[0]) / 2, (planet.coords[1] + otherPlanet.coords[1]) / 2)
-                
-                if (otherPlanet.coords[0] < planet.coords[0]) planet.velocity[0] -= b
-                else if (otherPlanet.coords[0] > planet.coords[0]) planet.velocity[0] += b
-                if (otherPlanet.coords[1] < planet.coords[1]) planet.velocity[1] -= b
-                else if (otherPlanet.coords[1] > planet.coords[1]) planet.velocity[1] += b
+                let position = planet.coords.map((coord, i) => coord - otherPlanet.coords[i])              
+                let acceleration = position.map((pos) => pos / distance)
+                planet.velocity =  planet.velocity.map((velocity, i) => velocity - acceleration[i])
             })
             return planet;
         })
