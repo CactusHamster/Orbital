@@ -31,7 +31,7 @@ class Simulation {
         options.velocity = options.velocity ?? [0, 0]
         options.radius = options.radius ?? 3
         options.stable = options.stable ?? false
-        options.gravity = ( options.gravity ?? options.radius/24 )
+        options.gravity = ( options.gravity ?? options.radius/3 )
         options.gravity += options.stable ? 0 : (Math.random() * options.gravity) - (options.gravity/2)
         this.planets.push(options)
     }
@@ -47,7 +47,7 @@ class Simulation {
                 let distance = ind != i ? this.distance(planet.coords, otherPlanet.coords) : null
                 if (!distance) return;
                 let position = planet.coords.map((coord, i) => coord - otherPlanet.coords[i])              
-                let acceleration = position.map((pos) => pos / distance)
+                let acceleration = position.map((pos) => (pos / planet.gravity) / distance)
                 planet.velocity =  planet.velocity.map((velocity, i) => velocity - acceleration[i])
             })
             return planet;
