@@ -1,0 +1,102 @@
+<head>
+    <title>Gravity</title>
+    <meta charset="UTF-8">
+</head>
+<style>
+    body {
+        margin: 0px;
+        background: black;
+    }
+</style>
+<body>
+    <canvas id="view"></canvas>
+</body>
+<script src="color.js"></script>
+<script src="simulation.js"></script>
+<script>
+    let solar = newSolar(16)
+    
+    let renderer = {
+        paused: false,
+        delay: 0,
+        cursorSize: 3,
+    }
+
+    let sleep = (ms) => {return new Promise(resolve => setTimeout(resolve, ms));}
+    let mouseCoords// = [window.innerWidth / 2, window.innerHeight / 2]
+    function mousemove (e) { mouseCoords = [e.clientX, e.clientY] }
+    document.addEventListener('mouseover', function mouseOverHandler (e) { mousemove(e); document.removeEventListener('mouseover', mouseOverHandler, false); }, false);
+    document.addEventListener('mousemove', mousemove)
+
+    const canvas = document.getElementById('view')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const ctx = canvas.getContext('2d')
+    let game = new Simulation(ctx, {
+        distance: function (p1, p2)  {
+            return Math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+        }
+    })
+
+    document.addEventListener('click', function (e) {
+        if (renderer.paused) return;
+        game.addPlanet({
+            x: e.clientX,
+            y: e.clientY,
+            radius: renderer.cursorSize,
+            color: solar[game.planets.length % solar.length]
+        })
+    });
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault()
+        for (let i in game.planets) {
+            if (game.distance([e.clientX, e.clientY], game.planets[i].coords) <= game.planets[i].radius) {
+                game.planets.splice(i, 1)
+                break;
+            }
+        }
+    })
+
+
+    window.addEventListener('mousewheel', mouseWheelEvent);
+    window.addEventListener('DOMMouseScroll', mouseWheelEvent);
+    function mouseWheelEvent(e) {
+        if (renderer.paused) return;
+        var delta = e.wheelDelta ? e.wheelDelta : -e.detail;
+        if (delta < 0 && renderer.cursorSize > 2) renderer.cursorSize--
+        else if (delta > 0) renderer.cursorSize++
+    }
+
+    function render () {
+        if (renderer.paused) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        game.calculate()
+        game.render()
+        if (mouseCoords) {
+            ctx.beginPath();
+            ctx.fillStyle = "rgba(28, 255, 244, 0.2)"
+            ctx.arc(...mouseCoords, renderer.cursorSize, 0, 2 * Math.PI);
+            ctx.fill()
+        }
+        sleep(renderer.delay).then(render)
+    }
+    render()
+    document.addEventListener('keypress', function (e) {
+        if (e.key == " ") {
+            renderer.paused = !renderer.paused;
+            if (renderer.paused) {
+                ctx.font = "30px Comic Sans MS";
+                ctx.fillStyle = "gray";
+                ctx.textAlign = "center";
+                ctx.fillText("Paused", canvas.width/2, canvas.height/2); 
+            }
+            render()
+        }
+
+        if (renderer.paused) return;
+        if (e.key == "]") renderer.cursorSize += 10
+        else if (e.key == "[") renderer.cursorSize -= 10
+    })
+
+
+</script>
