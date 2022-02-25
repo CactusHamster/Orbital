@@ -35,7 +35,8 @@
     let game = new Simulation(ctx, {
         distance: function (p1, p2)  {
             return Math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
-        }
+        },
+        border: 'loop'
     })
 
     document.addEventListener('click', function (e) {
@@ -44,7 +45,9 @@
             x: e.clientX,
             y: e.clientY,
             radius: renderer.cursorSize,
-            color: solar[game.planets.length % solar.length]
+            color: solar[game.planets.length % solar.length],
+            vx: Math.random() * 0.5,
+            vy: Math.random() * 0.5
         })
     });
     document.addEventListener('contextmenu', function (e) {

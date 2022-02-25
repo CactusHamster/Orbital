@@ -8,6 +8,7 @@ class Simulation {
         this.planets = []
         this.max = [this.ctx.canvas.width, this.ctx.canvas.height]
         this.min = [0, 0]
+        this.border = options.border ?? 'loop'
         this.distance = options.distance ?? this.constructor.euclidean
     }
     static euclidean (...args) {
@@ -28,10 +29,10 @@ class Simulation {
         delete options.y
         options.color = options.color ?? 'white'
         //options.velocity = options.velocity ?? [Math.random() * 10 - 5, Math.random() * 10 - 5]
-        options.velocity = options.velocity ?? [0, 0]
+        options.velocity = options.velocity ?? [options.vx ?? 0, options.vy ?? 0]
         options.radius = options.radius ?? 3
         options.stable = options.stable ?? false
-        options.gravity = ( options.gravity ?? options.radius / 120 )
+        options.gravity = ( options.gravity ?? options.radius / 240 )
         //options.gravity += options.stable ? 0 : (Math.random() * options.gravity) - (options.gravity/2)
         this.planets.push(options)
     }
@@ -57,8 +58,10 @@ class Simulation {
         this.planets = this.planets.map(planet => {
             planet.coords = planet.coords.map((coord, i) => {
                 coord += planet.velocity[i]
-                if (coord > this.max[i]) coord = this.min[i]
-                if (coord < this.min[i]) coord = this.max[i]
+                if (this.border) {
+                    if (coord > this.max[i]) coord = this.min[i]
+                    if (coord < this.min[i]) coord = this.max[i]
+                }
                 return coord;
             })
             return planet
