@@ -10,6 +10,7 @@ class Simulation {
         this.min = [0, 0]
         this.border = options.border ?? 'loop'
         this.distance = options.distance ?? this.constructor.euclidean
+        this.maxDistance = Math.sqrt((this.max[0] - this.min[0])**2 - (this.max[1] - this.min[1])**2);
     }
     static euclidean (...args) {
         let fast;
@@ -29,12 +30,12 @@ class Simulation {
         delete options.y
         options.color = options.color ?? 'white'
         //options.velocity = options.velocity ?? [Math.random() * 10 - 5, Math.random() * 10 - 5]
-        options.velocity = options.velocity ?? [options.vx ?? 0, options.vy ?? 0]
+        options.velocity = options.velocity ?? [(options.vx ?? 0), (options.vy ?? 0)]
         options.radius = options.radius ?? 3
         options.stable = options.stable ?? false
-        options.gravity = ( options.gravity ?? options.radius / 240 )
+        options.gravity = ( options.gravity ?? options.radius / 240 ) //240
         //options.gravity += options.stable ? 0 : (Math.random() * options.gravity) - (options.gravity/2)
-        this.planets.push(options)
+        return this.planets.push(options)
     }
     removePlanet (index) {
         if (typeof index == undefined) index = this.planets.length - 1
@@ -47,7 +48,7 @@ class Simulation {
             this.planets.forEach((otherPlanet, ind) => {
                 let distance = ind != i ? this.distance(planet.coords, otherPlanet.coords) : null
                 if (!distance) return;
-                let position = planet.coords.map((coord, i) => coord - otherPlanet.coords[i])              
+                let position = planet.coords.map((coord, i) => coord - otherPlanet.coords[i])
                 let acceleration = position.map((pos) => (pos / distance) * otherPlanet.gravity)
                 planet.velocity =  planet.velocity.map((velocity, i) => velocity - acceleration[i])
             })

@@ -32,24 +32,30 @@
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
     const ctx = canvas.getContext('2d')
+
+    let distance = function (p1, p2)  { return Math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2) }
+
     let game = new Simulation(ctx, {
-        distance: function (p1, p2)  {
-            return Math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
-        },
+        distance: distance,
         border: 'loop'
     })
 
-    document.addEventListener('click', function (e) {
-        if (renderer.paused) return;
+    let mouseStart = null
+    document.addEventListener('mouseup', function (e) {
+        if (renderer.paused || !mouseStart) return;
+        let pos = [e.clientX, e.clientY].map((c, i) => c - mouseStart[i])
+        let acel = pos.map((p) => (-p / game.maxDistance) * 50)
         game.addPlanet({
-            x: e.clientX,
-            y: e.clientY,
+            coords: mouseStart,
             radius: renderer.cursorSize,
             color: solar[game.planets.length % solar.length],
-            vx: Math.random() * 0.5,
-            vy: Math.random() * 0.5
+            velocity: acel
         })
+        mouseStart = null
     });
+
+    canvas.addEventListener('mousedown', function (e) { mouseStart = [e.clientX, e.clientY] })
+
     document.addEventListener('contextmenu', function (e) {
         e.preventDefault()
         for (let i in game.planets) {
@@ -81,6 +87,23 @@
             ctx.arc(...mouseCoords, renderer.cursorSize, 0, 2 * Math.PI);
             ctx.fill()
         }
+        if (mouseStart && mouseCoords) {
+            ctx.beginPath();
+            let x = distance(mouseStart, mouseCoords)
+            let a = 3 // 1/(a*2) is how much of the canvas the mouse can drag over before the blue ends
+            let b = -100 // a bit of blue to start off with at first
+            let w = game.maxDistance
+            let blue = (255 / (w / (a * 2))) * (x-b)
+            let red = 0
+            if (blue > 255) {
+                blue = (-255 / (w / (a * 2))) * (x - b - (w/a))
+                red = 255 / ((w * (((a*2) - 1) / (a*2)))-b) * (x - (w/(a*2)))
+            }
+            ctx.strokeStyle = `rgb(${red}, 0, ${blue})`
+            ctx.moveTo(...mouseStart);
+            ctx.lineTo(...mouseCoords)
+            ctx.stroke()
+        }
         sleep(renderer.delay).then(render)
     }
     render()
@@ -88,6 +111,7 @@
         if (e.key == " ") {
             renderer.paused = !renderer.paused;
             if (renderer.paused) {
+                mouseStart = null
                 ctx.font = "30px Comic Sans MS";
                 ctx.fillStyle = "gray";
                 ctx.textAlign = "center";
