@@ -76,35 +76,37 @@
         else if (delta > 0) renderer.cursorSize++
     }
 
-    function render () {
-        if (renderer.paused) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        game.calculate()
-        game.render()
-        if (mouseCoords) {
-            ctx.beginPath();
-            ctx.fillStyle = "rgba(28, 255, 244, 0.2)"
-            ctx.arc(...mouseCoords, renderer.cursorSize, 0, 2 * Math.PI);
-            ctx.fill()
-        }
-        if (mouseStart && mouseCoords) {
-            ctx.beginPath();
-            let x = distance(mouseStart, mouseCoords)
-            let a = 3 // 1/(a*2) is how much of the canvas the mouse can drag over before the blue ends
-            let b = -100 // a bit of blue to start off with at first
-            let w = game.maxDistance
-            let blue = (255 / (w / (a * 2))) * (x-b)
-            let red = 0
-            if (blue > 255) {
-                blue = (-255 / (w / (a * 2))) * (x - b - (w/a))
-                red = 255 / ((w * (((a*2) - 1) / (a*2)))-b) * (x - (w/(a*2)))
+    async function render () {
+        while (true) {
+            if (renderer.paused) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            game.calculate()
+            game.render()
+            if (mouseCoords) {
+                ctx.beginPath();
+                ctx.fillStyle = "rgba(28, 255, 244, 0.2)"
+                ctx.arc(...mouseCoords, renderer.cursorSize, 0, 2 * Math.PI);
+                ctx.fill()
             }
-            ctx.strokeStyle = `rgb(${red}, 0, ${blue})`
-            ctx.moveTo(...mouseStart);
-            ctx.lineTo(...mouseCoords)
-            ctx.stroke()
+            if (mouseStart && mouseCoords) {
+                ctx.beginPath();
+                let x = distance(mouseStart, mouseCoords)
+                let a = 3 // 1/(a*2) is how much of the canvas the mouse can drag over before the blue ends
+                let b = -100 // a bit of blue to start off with at first
+                let w = game.maxDistance
+                let blue = (255 / (w / (a * 2))) * (x-b)
+                let red = 0
+                if (blue > 255) {
+                    blue = (-255 / (w / (a * 2))) * (x - b - (w/a))
+                    red = 255 / ((w * (((a*2) - 1) / (a*2)))-b) * (x - (w/(a*2)))
+                }
+                ctx.strokeStyle = `rgb(${red}, 0, ${blue})`
+                ctx.moveTo(...mouseStart);
+                ctx.lineTo(...mouseCoords)
+                ctx.stroke()
+            }
+            await sleep(renderer.delay)
         }
-        sleep(renderer.delay).then(render)
     }
     render()
     document.addEventListener('keypress', function (e) {
